@@ -2,15 +2,29 @@ import scapy.all as scapy
 import argparse
 import re
 from random import randrange
+import logging
 
 """Script to emulate an inbound call for Caller ID device
 
 Script generates a packet that Caller ID devices generate and send it to broadcast IP
 """
 
+def setup_logging():
+    logger = logging.getLogger('hello')
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)-6s - %(message)s")
+    sh = logging.StreamHandler()
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
+
+    return logger
+
+logger = setup_logging()
+
 class PhoneNumber:
     def __init__(self):
         self.phone_number = self.get_phone_number()
+        logger.info("phone_number: " + self.phone_number)
 
     def __str__(self):
         return self.phone_number
@@ -27,10 +41,18 @@ class PhoneNumber:
         self.args = self.parser.parse_args()
 
         if self.args.phone_number:
+            logger.info("phone_number is provided")
             self.args.phone_number = str(self.args.phone_number)
             if self.validate_phone_number(self.args.phone_number):
+                logger.info("phone_number is valid")
                 return self.args.number.ljust(14, " ")# Padding phone number to 14 chars
+            else: 
+                logger.error("Invalid phone_number provided. phone_number must be 1-14 digits long")
+                logger.info("Generating a random number")
+                return self.generate_phone_number()
         else:
+            logger.info("No phone_number provided")
+            logger.info("Generating a random number")
             return self.generate_phone_number()
 
     def validate_phone_number(self, phone_number):
@@ -65,7 +87,10 @@ class UdpMessage:
         self.content = scapy.Raw(load=f"^^<U>000001<S>123456$01 I S 0000 G A1 01/01 12:00 PM {phone_number} CallerIDTest")
         self.packet = self.ip / self.proto / self.content
 
+        logger.info("Generated phone call message")
+
     def send(self):
+        logger.info("Sending phone call message")
         scapy.send(self.packet)
 
 def run():
