@@ -45,7 +45,7 @@ class PhoneNumber:
             self.args.phone_number = str(self.args.phone_number)
             if self.validate_phone_number(self.args.phone_number):
                 logger.info("phone_number is valid")
-                return self.args.number.ljust(14, " ")# Padding phone number to 14 chars
+                return self.args.phone_number.ljust(14, " ")# Padding phone number to 14 chars
             else: 
                 logger.error("Invalid phone_number provided. phone_number must be 1-14 digits long")
                 logger.info("Generating a random number")
