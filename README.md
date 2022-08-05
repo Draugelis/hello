@@ -8,11 +8,7 @@ Setup
 
 `git clone https://github.com/Draugelis/hello.git`
 
-2. Install requirements 
-
-`pip install -r requirements.txt`
-
-3. Run `hello.py` 
+2. Run `hello.py` 
 
 `python3 hello.py 555-555-5555`
 
