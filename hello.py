@@ -22,10 +22,12 @@ def setup_logging():
 
 logger = setup_logging()
 
-class PhoneNumber:
+class PhoneCall:
     def __init__(self):
         self.phone_number = self.get_phone_number()
         logger.info("phone_number: " + self.phone_number)
+        self.message = f"^^<U>000001<S>123456$01 I S 0000 G A1 01/01 12:00 PM {self.phone_number} CallerIDTest"
+        logger.info("Generated phone call message")
 
     def __str__(self):
         return self.phone_number
@@ -76,22 +78,18 @@ class PhoneNumber:
         """        
         return f"({randrange(100,999)})-{randrange(100,999)}-{randrange(1000,9999)}"
 
-
-class SocketMessage:
-    def __init__(self, phone_number):
-        self.content = f"^^<U>000001<S>123456$01 I S 0000 G A1 01/01 12:00 PM {phone_number} CallerIDTest"
-        logger.info("Generated phone call message")
-
     def send(self):
+        """Send phone call message
+
+        """
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s: 
             logger.info("Sending phone call message")
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            s.sendto(self.content.encode("utf-8"), ("255.255.255.255", 3520))
+            s.sendto(self.message.encode("utf-8"), ("255.255.255.255", 3520))
 
 def run():
-    phone_number = PhoneNumber()
-    message = SocketMessage(phone_number)
-    message.send()
+    phone_call = PhoneCall()
+    phone_call.send()
 
 if __name__ == "__main__":
     run()
