@@ -1,8 +1,9 @@
-import scapy.all as scapy
 import argparse
 import re
 from random import randrange
 import logging
+import socket 
+import ipaddress
 
 """Script to emulate an inbound call for Caller ID device
 
@@ -76,26 +77,20 @@ class PhoneNumber:
         return f"({randrange(100,999)})-{randrange(100,999)}-{randrange(1000,9999)}"
 
 
-class UdpMessage:
-    """Class for generating and sending broadcast message to emulate inbound call
-    """
-    
+class SocketMessage:
     def __init__(self, phone_number):
-        self.dst = scapy.conf.route.get_if_bcast(scapy.conf.iface)[0] 
-        self.ip = scapy.IP(src="0.0.0.0", dst=self.dst)
-        self.proto = scapy.UDP(sport=3520, dport=3520) 
-        self.content = scapy.Raw(load=f"^^<U>000001<S>123456$01 I S 0000 G A1 01/01 12:00 PM {phone_number} CallerIDTest")
-        self.packet = self.ip / self.proto / self.content
-
+        self.content = f"^^<U>000001<S>123456$01 I S 0000 G A1 01/01 12:00 PM {phone_number} CallerIDTest"
         logger.info("Generated phone call message")
 
     def send(self):
-        logger.info("Sending phone call message")
-        scapy.send(self.packet)
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s: 
+            logger.info("Sending phone call message")
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            s.sendto(self.content.encode("utf-8"), ("255.255.255.255", 3520))
 
 def run():
     phone_number = PhoneNumber()
-    message = UdpMessage(phone_number)
+    message = SocketMessage(phone_number)
     message.send()
 
 if __name__ == "__main__":
